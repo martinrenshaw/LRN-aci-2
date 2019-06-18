@@ -1,6 +1,6 @@
 ---
-- name: TOP LEVEL PLAY - CREATE - Tenant - VRF - Bridge Domain - BD SUBNET 
-  hosts: all
+- name: TOP LEVEL PLAY - CREATE ACI STUFF
+  hosts: apicProd
   connection: local
   gather_facts: False
 
@@ -27,6 +27,16 @@
         vrf: "{{ item.1 }}"
         description: "{{ env }} VRF Created Using Ansible"
       loop: "{{ vrflist|subelements('vrf') }}"
+#
+# - ADD vars from csv file
+#
+    - name: Read vars from csv file
+      read_csv:
+        path: aci_vars.csv
+        key: bdz
+      register: CSV_list
+      tags: BDE
+
         
     - name: ENSURE PROD-TENANT BRIDGE DOMAIN EXISTS
       tags: BDE
@@ -36,12 +46,12 @@
         password: "{{ password }}"
         validate_certs: False
         state: "present"
-        tenant: "{{ bdlist.tenant }}"
-        bd: "{{env}}-{{ item | default('prod_bd') }}"
-        vrf: "{{ bdlist.vrf }}"
+        tenant: "{{ item.value.tenantz }}"
+        bd: "{{env}}-{{ item.key | default('prod_bd') }}"
+        vrf: "{{ item.value.vrfz }}"
         description: "BD Created Using Ansible"
-      loop: "{{ bdlist.bd }}"
-      register: regdb
+      loop: "{{ lookup('dict', CSV_list) }}"
+      #print: CSV_list
 
     - name: ENSURE TENANT SUBNET EXISTS
       aci_bd_subnet:

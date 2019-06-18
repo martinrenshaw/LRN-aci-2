@@ -30,12 +30,24 @@ bdlist:
       - 'BD08'
 
 
-
-
-
-#  - { tenant: 'MR-TF13DG', vrf: ['MR-TF13DG-vrf'] , bd: ['Prod-bd-1','Prod-bd-2'] }
-#  - { tenant: 'NB-KM13DG', vrf: ['NB-KM13DG-vrf'] , bd: ['Prod-bd-1'] }
-#  - { tenant: 'MH-SC1234', vrf: ['MH-1234-vrf-1', 'MH-1234-vrf-2'], bd: 'MH-SC1234-bd-1' }    
-#
-#
-#
+ap: "intranet"
+epgs:
+  - epg: "web"
+    encap: "21"
+    contract_type: "both"
+    consumer: "sql"
+    provider: "web"
+  - epg: "sql"
+    encap: "22"
+    contract_type: "provider"
+    provider: "sql"
+epg_contracts:
+  - epg: "web"
+    contract: "web"
+    contract_type: "provider"
+  - epg: "web"
+    contract: "sql"
+    contract_type: "consumer"
+  - epg: "sql"
+    contract: "sql"
+    contract_type: "provider"

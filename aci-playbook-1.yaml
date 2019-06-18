@@ -1,6 +1,6 @@
 ---
-- name: TOP LEVEL PLAY - CREATE - Tenant - VRF - Bridge Domain - BD SUBNET 
-  hosts: all
+- name: TOP LEVEL PLAY - CREATE ACI STUFF
+  hosts: apicProd
   connection: local
   gather_facts: False
 
@@ -53,7 +53,7 @@
         tenant: "{{ bdlist.tenant }}"
         bd: "{{env}}-{{ item | default('prod_bd')}}"
         subnet_name: "{{ item }}"
-        gateway: "10.100.{{ item.strip('DB0') }}.1"
+        gateway: "10.100.{{ item.strip('DB') }}.1"
         mask: 24
         scope: "public"
         description: "Subnet Created Using Ansible"
