@@ -1,0 +1,41 @@
+---
+
+env: PROD
+
+tenantlist:
+
+  - tenant: 'BLACK-COMMON'
+  - tenant: 'BLACK-Prod'
+  - tenant: 'BLACK-PreProd'
+
+vrflist:
+
+  - tenant: 'BLACK-COMMON'
+    vrf: 
+      - 'BLACK-COMMON-vrf1'
+      - 'BLACK-COMMON-vrf2'
+      - 'BLACK-COMMON-vrf3'
+
+bdlist:
+    tenant: 'BLACK-COMMON'
+    vrf: 'BLACK-COMMON-vrf1'
+    bd:
+      - 'BD01'
+      - 'BD02'
+      - 'BD03'
+      - 'BD04'
+      - 'BD05'
+      - 'BD06'
+      - 'BD07'
+      - 'BD08'
+
+
+
+
+
+#  - { tenant: 'MR-TF13DG', vrf: ['MR-TF13DG-vrf'] , bd: ['Prod-bd-1','Prod-bd-2'] }
+#  - { tenant: 'NB-KM13DG', vrf: ['NB-KM13DG-vrf'] , bd: ['Prod-bd-1'] }
+#  - { tenant: 'MH-SC1234', vrf: ['MH-1234-vrf-1', 'MH-1234-vrf-2'], bd: 'MH-SC1234-bd-1' }    
+#
+#
+#
