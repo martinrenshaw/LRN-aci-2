@@ -47,11 +47,17 @@
         validate_certs: False
         state: "present"
         tenant: "{{ item.value.tenantz }}"
-        bd: "{{env}}-{{ item.key | default('prod_bd') }}"
+        bd: "{{env}}-{{ item.value.bdz | default('prod_bd') }}"
         vrf: "{{ item.value.vrfz }}"
         description: "BD Created Using Ansible"
-      loop: "{{ lookup('dict', CSV_list) }}"
-      #print: CSV_list
+      loop: "{{ lookup('dict', CSV_list.dict) }}"
+      
+#   This was to help debug the DICT output # http://www.mydailytutorials.com/ansible-register-variables/
+##`    - name: show loop of CSV_list
+##`      debug:
+##`        msg: "VRF is {{item.value.vrfz}} tenant is {{item.value.tenantz}} BD is {{item.value.bdz}}"
+##`      loop: "{{ lookup('dict', CSV_list.dict)}}"
+##      tags: BDE
 
     - name: ENSURE TENANT SUBNET EXISTS
       aci_bd_subnet:
@@ -60,12 +66,12 @@
         password: "{{ password }}"
         validate_certs: False
         state: "present"
-        tenant: "{{ bdlist.tenant }}"
-        bd: "{{env}}-{{ item | default('prod_bd')}}"
-        subnet_name: "{{ item }}"
-        gateway: "10.100.{{ item.strip('DB0') }}.1"
+        tenant: "{{ item.value.tenantz }}"
+        bd: "{{env}}-{{ item.value.bdz | default('prod_bd') }}"
+        subnet_name: "{{ item.value.bdz }}"
+        gateway: "{{ item.value.gatewayz }}"
         mask: 24
         scope: "public"
         description: "Subnet Created Using Ansible"
-      loop: "{{ bdlist.bd }}"
+      loop: "{{ lookup('dict', CSV_list.dict) }}"
       tags: sub
