@@ -1,13 +1,13 @@
 ---
 
-env: PROD
+
 
 tenantlist:
 
   - tenant: 'BLACK-COMMON'
   - tenant: 'BLACK-Prod'
   - tenant: 'BLACK-PreProd'
-  - tenant: 'gold-tenant'
+  - tenant: 'grey-COMMON'
 
 vrflist:
 

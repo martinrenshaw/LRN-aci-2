@@ -4,41 +4,50 @@
   connection: local
   gather_facts: False
 
+  vars:
+    env: PROD
+
   tasks:
-    - name: ENSURE TENANT EXISTS
+#
+# - ADD vars from csv file
+#
+    - name: Task 1 - Read vars from csv file
+      read_csv:
+        path: aci_vars.csv
+        key: keyid
+      register: CSV_list
+      tags: sub
+
+    - name: Task 2 - ENSURE TENANT EXISTS
       aci_tenant:
         host: "{{ inventory_hostname }}"
         username: "{{ username }}"
         password: "{{ password }}"
         state: "present"
         validate_certs: False
-        tenant: "{{ item.tenant }}"
+        tenant: "{{ item.value.tenantz }}"
         description: "TENANT Created Using Ansible"
-      loop: "{{ tenantlist }}"
+      loop: "{{ lookup('dict', CSV_list.dict) }}"
+      when: item.value.taskid == 'task2'
+      loop_control:
+        label: "{{ item.value.tenantz }}"
 
-    - name: ENSURE TENANT VRF EXISTS
+    - name: Task 3 - ENSURE TENANT VRF EXISTS
       aci_vrf:
         host: "{{ inventory_hostname }}"
         username: "{{ username }}"
         password: "{{ password }}"
         state: "present"
         validate_certs: False
-        tenant: "{{ item.0.tenant }}"
-        vrf: "{{ item.1 }}"
+        tenant: "{{ item.value.tenantz }}"
+        vrf: "{{ item.value.vrfz }}"
         description: "{{ env }} VRF Created Using Ansible"
-      loop: "{{ vrflist|subelements('vrf') }}"
-#
-# - ADD vars from csv file
-#
-    - name: Read vars from csv file
-      read_csv:
-        path: aci_vars.csv
-        key: bdz
-      register: CSV_list
-      tags: BDE
+      loop: "{{ lookup('dict', CSV_list.dict) }}"
+      when: item.value.taskid == 'task3'
+      loop_control:
+        label: "{{ item.value.vrfz }}"
 
-        
-    - name: ENSURE PROD-TENANT BRIDGE DOMAIN EXISTS
+    - name: Task 4 - ENSURE PROD-TENANT BRIDGE DOMAIN EXISTS
       tags: BDE
       aci_bd:
         host: "{{ inventory_hostname }}"
@@ -51,6 +60,9 @@
         vrf: "{{ item.value.vrfz }}"
         description: "BD Created Using Ansible"
       loop: "{{ lookup('dict', CSV_list.dict) }}"
+      when: item.value.taskid == 'task4'
+      loop_control:
+        label: "{{ item.value.bdz }}"
       
 #   This was to help debug the DICT output # http://www.mydailytutorials.com/ansible-register-variables/
 ##`    - name: show loop of CSV_list
@@ -59,7 +71,7 @@
 ##`      loop: "{{ lookup('dict', CSV_list.dict)}}"
 ##      tags: BDE
 
-    - name: ENSURE TENANT SUBNET EXISTS
+    - name: Task 4 - ENSURE TENANT SUBNET EXISTS
       aci_bd_subnet:
         host: "{{ inventory_hostname }}"
         username: "{{ username }}"
@@ -74,4 +86,22 @@
         scope: "public"
         description: "Subnet Created Using Ansible"
       loop: "{{ lookup('dict', CSV_list.dict) }}"
+      when: item.value.taskid == 'task4'
       tags: sub
+
+##    - name: Task 5 - L3out Test
+##      aci_l3out:
+##        host: "{{ inventory_hostname }}"
+##        username: "{{ username }}"
+##        password: "{{ password }}"
+##        validate_certs: False
+##        state: "present"
+##        tenant: grey-COMMON
+##        name: prod_l3out
+##        description: L3out for grey-COMMON
+##        domain: l3dom_prod
+##        vrf: grey-COMMON-vrf1
+##        l3protocol: ospf,bgp
+##        route_control: export
+##        asn: 100
+##      tags: L3out
