@@ -3,10 +3,10 @@
   hosts: apic
   connection: local
   gather_facts: False
-  vars_prompt:
-    - name: "tenant"
-      prompt: "What would you like to name your Tenant?"
-      private: no
+ # vars_prompt:
+ #   - name: "tenant"
+ #     prompt: "What would you like to name your Tenant?"
+ #     private: no
 
   tasks:
     - name: ENSURE TENANT FILTERS EXIST
@@ -19,9 +19,9 @@
         tenant: "{{ tenant }}"
         filter: "{{ item }}"
         descr: "Filter Created Using Ansible"
-      with_items:
-        - "https"
-        - "sql"
+       #with_items:
+        #- "https"
+       # - "sql"
 
     - name: ENSURE FILTERS HAVE FILTER ENTRIES
       aci_filter_entry:
