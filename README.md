@@ -1,7 +1,7 @@
 # LRN-aci-2
 ACI with var options
 
-'
+```
 $ ansible-playbook 05_aci_deploy_app.yml -i inventory --list-tasks
 
 playbook: 05_aci_deploy_app.yml
@@ -21,4 +21,4 @@ playbook: 05_aci_deploy_app.yml
       TASK 11 - ENSURE APPLICATION EPGS EXISTS    TAGS: [epg]
       TASK 12 - ENSURE DOMAIN IS BOUND TO EPG    TAGS: [epg]
       TASK 13 - ENSURE EPGS HAVE CONTRACTS    TAGS: [epg]
-'
+```
