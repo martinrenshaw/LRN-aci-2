@@ -8,12 +8,9 @@
     env: PROD
 
   tasks:
-#
-# - ADD vars from csv file
-#
     - name: Task 1 - Read vars from csv file
       read_csv:
-        path: aci_vars.csv
+        path: 01__aci_tenant_network_vars.csv
         key: keyid
       register: CSV_list
       tags: sub
@@ -27,6 +24,7 @@
         validate_certs: False
         tenant: "{{ item.value.tenantz }}"
         description: "TENANT Created Using Ansible"
+        output_level: debug
       loop: "{{ lookup('dict', CSV_list.dict) }}"
       when: item.value.taskid == 'task2'
       loop_control:
@@ -42,12 +40,13 @@
         tenant: "{{ item.value.tenantz }}"
         vrf: "{{ item.value.vrfz }}"
         description: "{{ env }} VRF Created Using Ansible"
+        output_level: debug
       loop: "{{ lookup('dict', CSV_list.dict) }}"
       when: item.value.taskid == 'task3'
       loop_control:
         label: "{{ item.value.vrfz }}"
 
-    - name: Task 4 - ENSURE PROD-TENANT BRIDGE DOMAIN EXISTS
+    - name: Task 4 - ENSURE TENANT BRIDGE DOMAIN EXISTS
       tags: BDE
       aci_bd:
         host: "{{ inventory_hostname }}"
@@ -59,6 +58,7 @@
         bd: "{{env}}-{{ item.value.bdz | default('prod_bd') }}"
         vrf: "{{ item.value.vrfz }}"
         description: "BD Created Using Ansible"
+        output_level: debug
       loop: "{{ lookup('dict', CSV_list.dict) }}"
       when: item.value.taskid == 'task4'
       loop_control:
@@ -85,27 +85,47 @@
         mask: 24
         scope: "public"
         description: "Subnet Created Using Ansible"
+        output_level: debug
       loop: "{{ lookup('dict', CSV_list.dict) }}"
       when: item.value.taskid == 'task4'
       tags: sub
 
-##    - name: Task 5 - L3out Test
-##      aci_l3out:
-##        host: "{{ inventory_hostname }}"
-##        username: "{{ username }}"
-##        password: "{{ password }}"
-##        validate_certs: False
-##        state: "present"
-##        tenant: grey-COMMON
-##        name: prod_l3out
-##        description: L3out for grey-COMMON
-##        domain: l3dom_prod
-##        vrf: grey-COMMON-vrf1
-##        l3protocol: ospf,bgp
-##        route_control: export
-##        asn: 100
-##      tags: L3out
+    - name: Task 5 - L3out Test
+      aci_l3out:
+        host: "{{ inventory_hostname }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        validate_certs: False
+        state: "present"
+        tenant: grey-COMMON
+        name: prod_l3out
+        description: "L3out for grey-COMMON Created Using Ansible"
+        domain: l3dom_prod
+        vrf: grey-COMMON-vrf1
+        l3protocol: ospf,bgp
+        route_control: export
+        asn: 100
+        output_level: debug
+      tags: L3out
 
+    - name: Task 6 - L3out to BD Test
+      aci_bd_to_l3out:
+        host: "{{ inventory_hostname }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        validate_certs: False
+        state: "present"
+        tenant: grey-COMMON
+        l3out: prod_l3out
+        bd: "{{env}}-BD01"
+#        description: "L3out for grey-COMMON Created Using Ansible"
+#        domain: l3dom_prod
+#        vrf: grey-COMMON-vrf1
+#        l3protocol: ospf,bgp
+#        route_control: export
+#        asn: 100
+        output_level: debug
+      tags: L3out
 
 
 ## -- https://developer.cisco.com/learning/tracks/aci-programmability/ansible-aci-intro/aci_ansible_part3/step/2

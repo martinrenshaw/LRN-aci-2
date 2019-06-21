@@ -1,62 +1,104 @@
 ---
 - name: ENSURE APPLICATION CONFIGURATION EXISTS
-  hosts: apic
+  hosts: apicProd
   connection: local
   gather_facts: False
+  
+
+  vars:
+    env: PROD
+
 
   tasks:
-    - name: ENSURE APPLICATION EXISTS
+
+    - name: Task 1 - Read vars from csv file
+      read_csv:
+        path: 03_aci_tenant_app_vars.csv
+        key: keyid
+      register: CSV_list
+      tags: sub
+
+    - name: Task 2 - ENSURE APPLICATION EXISTS
       aci_ap:
         host: "{{ inventory_hostname }}"
         username: "{{ username }}"
         password: "{{ password }}"
         state: "present"
         validate_certs: False
-        tenant: "{{ tenant }}"
-        ap: "{{ ap }}"
+        tenant: "{{ item.value.tenant }}"
+        ap: "{{ item.value.appprofile }}"
         descr: "App Profile Created Using Ansible"
+        output_level: debug
+      loop: "{{ lookup('dict', CSV_list.dict) }}"
+      when: item.value.taskid == 'task2'
 
-    - name: ENSURE APPLICATION EPGS EXISTS
+#      loop_control:
+#        label: "{{ item.value.tenant }}"
+
+    - name: Task 3 - ENSURE APPLICATION EPGS EXISTS
+      tags: sub
       aci_epg:
         host: "{{ inventory_hostname }}"
         username: "{{ username }}"
         password: "{{ password }}"
         state: "present"
         validate_certs: False
-        tenant: "{{ tenant }}"
-        ap: "{{ ap }}"
-        epg: "{{ item.epg }}"
-        bd: "prod_bd"
+        tenant: "{{ item.value.tenant }}"
+        ap: "{{ item.value.appprofile }}"
+        epg: "{{ item.value.epg }}"
+        bd: "{{env}}-{{ item.value.bd }}"
         description: "EPG Created Using Ansible"
-      with_items: "{{ epgs }}"
+        output_level: debug
+      loop: "{{ lookup('dict', CSV_list.dict) }}"
+      when: item.value.taskid == 'task3'
 
-    - name: ENSURE DOMAIN IS BOUND TO EPG
+#      loop_control:
+#        label: "{{ item.value.tenant }}"
+#      with_items: "{{ epgs }}"
+
+    - name: task 4 - ENSURE DOMAIN IS BOUND TO EPG
       aci_epg_to_domain:
         host: "{{ inventory_hostname }}"
         username: "{{ username }}"
         password: "{{ password }}"
         state: "present"
         validate_certs: false
-        tenant: "{{ tenant }}"
-        ap: "{{ ap }}"
-        epg: "{{ item.epg }}"
+        tenant: "{{ item.value.tenant }}"
+        ap: "{{ item.value.appprofile }}"
+        epg: "{{ item.value.epg }}"
         domain: "aci_ansible_lab"
         domain_type: "vmm"
         vm_provider: "vmware"
         encap_mode: "auto"
-        encap: "{{ item.encap }}"
-      with_items: "{{ epgs }}"
+        encap: "{{ item.value.encap }}"
+        output_level: debug
+      loop: "{{ lookup('dict', CSV_list.dict) }}"
+      when: item.value.taskid == 'task4'
 
-    - name: ENSURE EPG IS ASSOCIATED TO CONTRACTS
+#      loop_control:
+#        label: "{{ item.value.tenant }}"
+#      with_items: "{{ epgs }}"
+
+
+    - name: Task 5 - ENSURE EPG IS ASSOCIATED TO CONTRACTS
       aci_epg_to_contract:
         host: "{{ inventory_hostname }}"
         username: "{{ username }}"
         password: "{{ password }}"
         state: "present"
         validate_certs: False
-        tenant: "{{ tenant }}"
-        ap: "{{ ap }}"
-        epg: "{{ item.epg }}"
-        contract: "{{ item.contract }}"
-        contract_type: "{{ item.contract_type }}"
-      with_items: "{{ epg_contracts }}"
+        tenant: "{{ item.value.tenant }}"
+        ap: "{{ item.value.appprofile }}"
+        epg: "{{ item.value.epg }}"
+        contract: "{{ item.value.contract }}"
+        contract_type: "{{ item.value.contract_type }}"
+        output_level: debug
+      loop: "{{ lookup('dict', CSV_list.dict) }}"
+      when: item.value.taskid == 'task5'
+      loop_control:
+        label: "{{ item.value.appprofile }}"
+
+
+           
+
+#      with_items: "{{ epg_contracts }}"
